@@ -1,0 +1,65 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>会議録音・アップロード</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <h1>会議録音・アップロード</h1>
+
+    <form id="metaForm">
+      <label>会議名: <input type="text" name="title" required></label><br>
+      <label>日時: <input type="datetime-local" name="datetime" required></label><br>
+      <label>参加者: <input type="text" name="participants" required></label><br>
+
+      <label>Whisperモデル:
+        <select name="whisper_model">
+          <option value="tiny">tiny</option>
+          <option value="base" selected>base</option>
+          <option value="small">small</option>
+          <option value="medium">medium</option>
+          <option value="large">large</option>
+        </select>
+      </label><br>
+
+      <label>GPTモデル:
+        <select name="gpt_model">
+          <option value="gpt-3.5-turbo">gpt-3.5-turbo</option>
+          <option value="gpt-4" selected>gpt-4</option>
+        </select>
+      </label><br>
+    </form>
+
+    <h2>録音</h2>
+    <button id="startBtn">録音開始</button>
+    <button id="stopBtn" disabled>録音停止</button>
+    <br><br>
+
+    <h2>または音声ファイルをアップロード</h2>
+    <input type="file" id="fileInput" accept="audio/*">
+
+    <audio id="audioPlayback" controls></audio>
+    <br>
+
+    <button id="submitBtn" disabled>送信</button>
+
+    <div id="statusMessage"></div>
+
+    <h2>文字起こし・議事録</h2>
+
+    <details id="transcriptionSection">
+      <summary>📝 文字起こし（クリックで展開）</summary>
+      <pre id="transcription"></pre>
+    </details>
+
+    <hr>
+
+    <h3>🧾 議事録</h3>
+    <pre id="summary"></pre>
+  </div>
+  <script src="{{ url_for('static', filename='recorder.js') }}"></script>
+</body>
+</html>

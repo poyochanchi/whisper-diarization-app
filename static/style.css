@@ -1,0 +1,86 @@
+body {
+  font-family: "Segoe UI", sans-serif;
+  background-color: #f8f9fa;
+  margin: 0;
+  padding: 0;
+  color: #212529;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 700px;
+  padding: 2rem;
+  background-color: #ffffff;
+  margin-top: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+h1, h2, h3 {
+  color: #2c3e50;
+}
+
+form label {
+  display: block;
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+input[type="text"],
+input[type="datetime-local"],
+input[type="file"] {
+  width: 100%;
+  max-width: 500px;
+  padding: 0.5rem;
+  margin-top: 0.3rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #fff;
+}
+
+button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  margin-top: 1rem;
+  margin-right: 1rem;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+button:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+audio {
+  margin-top: 1rem;
+  width: 100%;
+  max-width: 500px;
+}
+
+pre {
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  padding: 1rem;
+  border-radius: 5px;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  margin-top: 1rem;
+}
+
+#statusMessage {
+  font-weight: bold;
+  margin-top: 1rem;
+  color: #0069d9;
+}
