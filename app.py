@@ -1,7 +1,6 @@
 import os
 import tempfile
 from flask import Flask, request, render_template, jsonify
-from werkzeug.utils import secure_filename
 import whisper
 from pydub import AudioSegment
 from pyannote.audio import Pipeline
@@ -9,7 +8,6 @@ from openai import OpenAI
 import ffmpeg
 from dotenv import load_dotenv
 
-# 環境変数読み込み
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 HUGGINGFACE_TOKEN = os.getenv("HUGGINGFACE_TOKEN")
@@ -18,8 +16,9 @@ client = OpenAI(api_key=OPENAI_API_KEY)
 
 app = Flask(__name__)
 
-# Whisperモデルのキャッシュ辞書
+# キャッシュと初期化用
 global_whisper_model_cache = {}
+global_speaker_pipeline = None
 
 @app.route("/")
 def index():
@@ -48,23 +47,29 @@ def process():
             global_whisper_model_cache[whisper_model_name] = whisper.load_model(whisper_model_name)
         whisper_model = global_whisper_model_cache[whisper_model_name]
 
-        speaker_pipeline = Pipeline.from_pretrained(
-            "pyannote/speaker-diarization@2.1",
-            use_auth_token=HUGGINGFACE_TOKEN
-        )
-        diarization = speaker_pipeline(wav_path)
+        # 話者分離パイプラインの再利用
+        global global_speaker_pipeline
+        if global_speaker_pipeline is None:
+            global_speaker_pipeline = Pipeline.from_pretrained(
+                "pyannote/speaker-diarization@2.1",
+                use_auth_token=HUGGINGFACE_TOKEN
+            )
+        diarization = global_speaker_pipeline(wav_path)
         audio = AudioSegment.from_file(wav_path)
+
+        # セグメント一括処理で高速化
         transcript_parts = []
+        segments = [
+            (turn, speaker)
+            for turn, _, speaker in diarization.itertracks(yield_label=True)
+            if (turn.end - turn.start) >= 0.5
+        ]
 
-        for turn, _, speaker in diarization.itertracks(yield_label=True):
-            duration = turn.end - turn.start
-            if duration < 0.5:
-                continue
-
+        for turn, speaker in segments:
             segment = audio[turn.start * 1000: turn.end * 1000]
             with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as seg_file:
                 segment.export(seg_file.name, format="wav")
-                result = whisper_model.transcribe(seg_file.name)
+                result = whisper_model.transcribe(seg_file.name, fp16=True)
                 transcript_parts.append(f"[{speaker}] {result['text'].strip()}")
                 os.unlink(seg_file.name)
 
@@ -95,7 +100,6 @@ def process():
             messages=[{"role": "user", "content": prompt}],
             temperature=0.3
         )
-
         summary = response.choices[0].message.content
 
         return jsonify({
