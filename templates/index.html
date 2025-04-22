@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <title>会議録音・アップロード</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script src="https://cdn.socket.io/3.1.3/socket.io.min.js"></script>
 </head>
 <body>
   <div class="container">
@@ -46,7 +47,7 @@
 
     <button id="submitBtn" disabled>送信</button>
 
-    <div id="statusMessage"></div>
+    <!-- <div id="statusMessage"></div> -->
 
     <h2>文字起こし・議事録</h2>
 
@@ -59,7 +60,26 @@
 
     <h3>🧾 議事録</h3>
     <pre id="summary"></pre>
+    <button onclick="startProcess()">開始</button>
+    <pre id="statusMessage" style="background:#eee;height:200px;overflow-y:auto;"></pre>
+  
+    
   </div>
   <script src="{{ url_for('static', filename='recorder.js') }}"></script>
+  <script>
+    const socket = io();
+
+    function logStatus(msg) {
+      const el = document.getElementById("statusMessage");
+      el.textContent += msg + "\n";
+      el.scrollTop = el.scrollHeight;
+    }
+
+    function startProcess() {
+      socket.emit("start_process", { user: "test" });
+    }
+
+    socket.on("status", (msg) => logStatus(msg));
+  </script>
 </body>
 </html>

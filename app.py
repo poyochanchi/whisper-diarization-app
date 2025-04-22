@@ -1,6 +1,10 @@
+import eventlet
+eventlet.monkey_patch()
+
 import os
 import tempfile
 from flask import Flask, request, render_template, jsonify
+from flask_socketio import SocketIO, emit
 import whisper
 from pydub import AudioSegment
 from pyannote.audio import Pipeline
@@ -8,13 +12,14 @@ from openai import OpenAI
 import ffmpeg
 from dotenv import load_dotenv
 
+app = Flask(__name__)
+socketio = SocketIO(app, cors_allowed_origins="*")
+
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 HUGGINGFACE_TOKEN = os.getenv("HUGGINGFACE_TOKEN")
 
 client = OpenAI(api_key=OPENAI_API_KEY)
-
-app = Flask(__name__)
 
 # キャッシュと初期化用
 global_whisper_model_cache = {}
@@ -110,5 +115,12 @@ def process():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@socketio.on("start_process")
+def handle_start(data):
+    emit("status", "処理開始")
+    emit("status", "ステップ1完了")
+    emit("status", "ステップ2完了")
+    emit("status", "すべて完了")
+
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    socketio.run(app, host="0.0.0.0", port=5000)
